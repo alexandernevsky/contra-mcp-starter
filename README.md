@@ -73,24 +73,22 @@ This will:
 4. Exchange the code for an `access_token` and `refresh_token`.
 5. Save the token securely to `contra_token.json` (strictly git-ignored).
 
-### 3. Verify your connection
-```bash
-npm run whoami
-```
-Output:
-```text
-👤 Contra Authenticated Profile
+### 3. Choose your workflow:
 
-Username: @your_username
-Name:     Your Name
-Type:     CONTRACTOR
-Profile:  https://contra.com/your_username
-```
+#### 🤖 Option A: Autonomous AI Mode (Zero Coding Required — Recommended)
+Open this folder in **Cursor**, **Google Antigravity**, **Claude Code**, or **Windsurf**.
+Simply copy and paste any prompt from **[`PROMPTS.md`](PROMPTS.md)** into the chat:
 
-### 4. Inspect your services and portfolio
+> *"Connect to my Contra via MCP. Read `templates/services.example.md` and `templates/profile.example.md`, inspect my live profile, and prepare the updates with a preview before applying."*
+
+Your AI agent reads [`AGENTS.md`](AGENTS.md), executes the tools, formats your offerings, and shows you the exact before/after diff for approval. **You never write a line of code.**
+
+#### 🛠️ Option B: Developer CLI & SDK Mode
+If you prefer running commands manually in your terminal:
 ```bash
-npm run services
-npm run projects
+npm run whoami     # Verify authenticated profile
+npm run services   # Inspect offered services & monthly rates
+npm run projects   # Inspect portfolio case studies & work posts
 ```
 
 ---

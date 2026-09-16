@@ -47,24 +47,22 @@ npm run auth
 4. Обменяет код на `access_token` и `refresh_token`.
 5. Сохранит токен в локальный файл `contra_token.json` (жестко изолирован в `.gitignore`).
 
-### 3. Проверьте подключение
-```bash
-npm run whoami
-```
-Вывод:
-```text
-👤 Contra Authenticated Profile
+### 3. Выберите удобный режим работы:
 
-Username: @your_username
-Name:     Your Name
-Type:     CONTRACTOR
-Profile:  https://contra.com/your_username
-```
+#### 🤖 Вариант А: Автономный режим AI (Без написания кода — Рекомендуется)
+Откройте эту папку в **Cursor**, **Google Antigravity**, **Claude Code** или **Windsurf**.
+Просто скопируйте любой готовый промпт из **[`PROMPTS.ru.md`](PROMPTS.ru.md)** в чат с AI:
 
-### 4. Просмотрите свои услуги и кейсы
+> *"Подключись к моему аккаунту Contra через MCP. Прочитай `templates/services.example.md` и `templates/profile.example.md`, изучи мой живой профиль и подготовь обновления с показом чернового диффа перед публикацией."*
+
+AI-агент прочитает инструкцию [`AGENTS.md`](AGENTS.md), выполнит нужные вызовы инструментов, красиво упакует услуги и покажет вам точный дифф изменений для подтверждения. **Вам не нужно писать ни строчки кода.**
+
+#### 🛠️ Вариант Б: Режим разработчика (CLI & SDK)
+Если вы предпочитаете запускать команды вручную в терминале:
 ```bash
-npm run services
-npm run projects
+npm run whoami     # Проверить авторизованный профиль
+npm run services   # Посмотреть список услуг и ставки
+npm run projects   # Посмотреть опубликованные кейсы и посты
 ```
 
 ---
