@@ -1,0 +1,29 @@
+# Sensitive OAuth tokens and credentials
+contra_token.json
+*.token.json
+.contra/
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Operating System & IDEs
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# AI Agent runtime artifacts
+.gemini/
+.cursor/
+*.log

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "contra": {
+      "serverUrl": "https://contra.com/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_CONTRA_ACCESS_TOKEN"
+      }
+    }
+  }
+}

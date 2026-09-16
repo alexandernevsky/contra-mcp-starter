@@ -1,0 +1,31 @@
+{
+  "name": "contra-mcp-starter",
+  "version": "1.0.0",
+  "description": "Zero-dependency starter kit and toolkit for automating your Contra profile, services, and portfolio case studies using Model Context Protocol (MCP) and AI coding agents.",
+  "type": "module",
+  "main": "scripts/contra-client.mjs",
+  "scripts": {
+    "auth": "node scripts/auth.mjs",
+    "whoami": "node scripts/examples/whoami.mjs",
+    "services": "node scripts/examples/inspect-services.mjs",
+    "projects": "node scripts/examples/inspect-projects.mjs",
+    "test": "node scripts/examples/whoami.mjs"
+  },
+  "keywords": [
+    "contra",
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "portfolio",
+    "freelance",
+    "automation",
+    "cursor",
+    "antigravity",
+    "claude-code"
+  ],
+  "author": "Alexander Nevsky <https://contra.com/alexander_nevsky>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
