@@ -27,3 +27,7 @@ Thumbs.db
 .gemini/
 .cursor/
 *.log
+
+# Temporary credential writes (including interrupted atomic saves)
+.contra_token.json.*.tmp
+*.token.json.*.tmp

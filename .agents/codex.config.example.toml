@@ -1,0 +1,6 @@
+# Merge into ~/.codex/config.toml or a trusted project's .codex/config.toml.
+# Run: codex mcp login contra
+# Codex owns its OAuth tokens; do not add a static Authorization header.
+[mcp_servers.contra]
+url = "https://contra.com/mcp"
+enabled_tools = ["whoami", "list_services", "list_portfolio_projects"]

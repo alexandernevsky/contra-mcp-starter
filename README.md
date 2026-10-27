@@ -1,225 +1,142 @@
-# Contra MCP Starter Toolkit ⚡
+# Contra MCP Starter Toolkit
 
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)](https://nodejs.org)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-Compatible-blue)](https://modelcontextprotocol.io/)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://github.com/alexandernevsky/contra-mcp-starter)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Contra](https://img.shields.io/badge/Platform-Contra.com-black?logo=contra)](https://contra.com)
+A zero-dependency Node.js client, OAuth helper and content templates for working with [Contra's official remote MCP](https://contra.com/features/mcp).
 
-> **Zero-dependency starter kit and automation SDK for managing your [Contra](https://contra.com) profile, flagship services, and portfolio case studies using Model Context Protocol (MCP) and AI coding agents (Google Antigravity, Cursor, Windsurf, Claude Code).**
+[English](README.md) · [Русский](README.ru.md)
 
-[English](README.md) • [Русская версия](README.ru.md)
+**For Codex and other OAuth-capable AI clients, connect directly to `https://contra.com/mcp`.** This repository is useful for JavaScript scripts, repeatable content workflows and local tests. It is a client library, **not a stdio MCP server**.
 
----
+## Connect Codex
 
-## Overview
+Use a current Codex installation with remote MCP and OAuth support:
 
-[Contra](https://contra.com) is the premier commission-free platform for independent builders, product designers, and engineers. Contra natively provides a powerful **remote MCP endpoint** (`https://contra.com/mcp`) offering 119 programmatic tools to manage profiles, case studies, productized services, contracts, and proposals.
-
-However, connecting AI agents to Contra typically involves complex OAuth 2.0 PKCE handshakes, expiring 1-hour access tokens, and navigating destructive write boundaries.
-
-This repository provides an open-source, production-tested solution:
-- **1-Click Interactive OAuth 2.0 PKCE**: Authenticates your Contra account in seconds via local callback server.
-- **Zero External Dependencies**: Powered purely by native Node.js 18+ runtime (`fetch`, `crypto`, `http`).
-- **Auto-Refreshing SDK Client**: Catches HTTP `401 Unauthorized` and silently renews access tokens using your `refresh_token`.
-- **Two-Phase Safety Protocol (`prepare → confirm`)**: Guarantees AI coding agents never silently overwrite or mutate your public profile without human approval.
-- **Content-as-Code Templates**: Ready-to-use Markdown templates for high-converting profile positioning, 3 flagship services (with monthly rates & FAQs), and structured case studies.
-
----
-
-## Architecture
-
-```text
-┌────────────────────────────────────────────────────────┐
-│      Your AI Coding Assistant                          │
-│   (Google Antigravity / Cursor / Claude Code / Windsurf)│
-└───────────────────────────┬────────────────────────────┘
-                            │ (Calls MCP Tools)
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│      Local Contra SDK Client (scripts/contra-client.mjs)│
-│  - Reads contra_token.json                             │
-│  - Auto-refreshes expired 1-hour sessions on 401       │
-│  - Implements prepare -> review -> confirm workflow     │
-└───────────────────────────┬────────────────────────────┘
-                            │ (Bearer Authorization)
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│      Remote Contra MCP Server (https://contra.com/mcp) │
-│  - 119 Official Tools (Profile, Services, Projects...) │
-│  - Cloudinary Media Pipeline                           │
-└────────────────────────────────────────────────────────┘
+```bash
+codex mcp add contra --url https://contra.com/mcp
 ```
 
----
+Complete the browser authorization if prompted. Otherwise start it explicitly:
 
-## Quickstart (2 Minutes)
+```bash
+codex mcp login contra
+codex mcp list
+```
 
-### 1. Clone the repository
+Codex manages its own OAuth credentials and renewal. You do not need `npm run auth`, a copied Bearer token or this repository's token file for this route.
+
+Alternatively add the following to `~/.codex/config.toml` (or a trusted project's `.codex/config.toml`), then run `codex mcp login contra`:
+
+```toml
+[mcp_servers.contra]
+url = "https://contra.com/mcp"
+# Start with the three read operations used by this toolkit.
+enabled_tools = ["whoami", "list_services", "list_portfolio_projects"]
+```
+
+[Example config](.agents/codex.config.example.toml). Reload the client/session if the new tools do not appear. The allowlist intentionally excludes writes; broaden it only for a reviewed task and after checking the current tool schemas. Host tool approvals and the Contra prepare/confirm workflow still apply.
+
+First prompt:
+
+> Read AGENTS.md. Use Contra only to verify my identity and inspect my services and published portfolio. Do not prepare drafts, confirm changes, send messages or perform financial operations. Report missing access rather than changing account settings.
+
+See the [official Codex MCP guide](https://learn.chatgpt.com/docs/extend/mcp) and [CLI reference](https://learn.chatgpt.com/docs/developer-commands). Commands were also checked against the locally installed CLI on 2026-10-27; the SDK OAuth flow was subsequently verified live. Native Codex sign-in was not run.
+
+## Other AI clients
+
+- **Claude Code:** `claude mcp add --transport http contra https://contra.com/mcp`, then authenticate through `/mcp`. See [Claude's guide](https://code.claude.com/docs/en/mcp).
+- **Claude Desktop / web:** use the remote connector UI with `https://contra.com/mcp` where your plan/admin policy allows custom connectors. Do not launch `scripts/contra-client.mjs` as a server.
+- **Cursor:** configure a remote URL in `.cursor/mcp.json`, then complete OAuth in Cursor. See [Cursor's MCP guide](https://cursor.com/docs/mcp).
+
+```json
+{
+  "mcpServers": {
+    "contra": { "url": "https://contra.com/mcp" }
+  }
+}
+```
+
+Windsurf and other clients should use Contra's [current installation guide](https://contra.com/features/mcp) for their own configuration format. The legacy Antigravity `serverUrl` example is in [.agents/mcp_config.example.json](.agents/mcp_config.example.json); verify OAuth support in your installed version. The SDK does not synchronize credentials with any editor. A static Bearer header will expire and must not be presented as an auto-refreshing integration.
+
+## JavaScript SDK and CLI
+
+Use Node.js 18.20+ with native `fetch`; use a maintained Node release in practice. No package installation is needed.
+
 ```bash
 git clone https://github.com/alexandernevsky/contra-mcp-starter.git
 cd contra-mcp-starter
+npm test              # Offline regression tests; no Contra credentials needed
+npm run auth          # Registers an OAuth client and opens the consent page
+npm run health        # Read-only account smoke test; no prepare/confirm
+npm run tools         # Current tool names and input schemas (all catalog pages)
+npm run whoami
+npm run services
+npm run projects
 ```
 
-### 2. Authenticate with Contra
-Run the zero-dependency authenticator:
-```bash
-npm run auth
-```
-This will:
-1. Dynamically register a secure local OAuth client with Contra.
-2. Automatically open your default browser to authorize your account.
-3. Capture the OAuth callback code on `localhost:4567`.
-4. Exchange the code for an `access_token` and `refresh_token`.
-5. Save the token securely to `contra_token.json` (strictly git-ignored).
+`auth` changes authorization state: run it only when you intend to connect the SDK. It uses PKCE S256, a random checked state and a five-minute callback window. It listens on `127.0.0.1:4567`; set `PORT` to another port (or `0` for an available port) if needed. Success is reported only after token exchange and `whoami` verification. It never edits global Codex, Antigravity or other editor configuration.
 
-### 3. Choose your workflow:
+SDK credentials resolve in this order:
 
-#### 🤖 Option A: Autonomous AI Mode (Zero Coding Required — Recommended)
-Open this folder in **Cursor**, **Google Antigravity**, **Claude Code**, or **Windsurf**.
-Simply copy and paste any prompt from **[`PROMPTS.md`](PROMPTS.md)** into the chat:
+1. `CONTRA_TOKEN_PATH`, if set (an explicit missing file is an error).
+2. `contra_token.json` in this checkout.
+3. The legacy `~/.gemini/config/contra_token.json`, if present.
 
-> *"Connect to my Contra via MCP. Read `templates/services.example.md` and `templates/profile.example.md`, inspect my live profile, and prepare the updates with a preview before applying."*
+`auth` writes to `CONTRA_TOKEN_PATH` or this checkout's `contra_token.json`. Atomic writes use mode `0600` on POSIX. Windows users should restrict the file's ACL. Keep credentials out of Git, chat, screenshots and backups shared with others. The token file is plain text, not a credential vault. No tokens are copied from a native AI client's credential store.
 
-Your AI agent reads [`AGENTS.md`](AGENTS.md), executes the tools, formats your offerings, and shows you the exact before/after diff for approval. **You never write a line of code.**
+The SDK refreshes after one HTTP 401 and retries that request once. Refresh failures preserve the existing file and require a new authorized login. Concurrent refreshes are coalesced within one process; use **one process per token file**, since cross-process refresh rotation is not coordinated. Old editor Bearer headers are not updated. The client does not replay requests after 429, network errors, timeouts or 5xx responses: inspect the account before retrying a write with an uncertain outcome.
 
-#### 🛠️ Option B: Developer CLI & SDK Mode
-If you prefer running commands manually in your terminal:
-```bash
-npm run whoami     # Verify authenticated profile
-npm run services   # Inspect offered services & monthly rates
-npm run projects   # Inspect portfolio case studies & work posts
+```js
+import { ContraClient } from './scripts/contra-client.mjs';
+
+const client = new ContraClient();
+const tools = await client.listTools();
+const me = await client.callTool('whoami');
 ```
 
----
+The transport initializes MCP, sends the initialized notification, propagates session IDs and negotiated protocol versions, and accepts JSON or SSE. It requests protocol `2025-03-26` and accepts `2025-03-26`, `2025-06-18` and `2025-11-25`. Unsupported versions fail explicitly. Requests have a 30-second timeout covering headers and body, and a 16 MiB response limit. This is a bounded tools client, not a general MCP host with sampling, elicitation or persistent server-push support.
 
-## Connecting to AI Coding Agents
+## Prepare, review, then confirm
 
-### 1. Google Antigravity
-The authenticator script automatically detects and updates your global `~/.gemini/config/mcp_config.json`:
-```json
-{
-  "mcpServers": {
-    "contra": {
-      "serverUrl": "https://contra.com/mcp",
-      "headers": {
-        "Authorization": "Bearer <YOUR_ACCESS_TOKEN>"
-      }
-    }
-  }
-}
+Contra documents a two-step mutation flow and a 15-minute draft lifetime. A prepare call creates server-side draft state; it is **not an offline dry run**. A request to inspect or test does not authorize prepare, confirm, publishing, messaging or payments.
+
+`callTool` / `callContraTool` permit only `whoami`, `list_services` and `list_portfolio_projects` by default. Any other tool requires `{ allowMutation: true }`. This is a caller opt-in guard, not proof of human approval or a security sandbox. The underlying transport and native AI clients are not governed by that SDK allowlist.
+
+For an owner-authorized update:
+
+1. Discover the current schemas with `npm run tools` and read the target entity.
+2. Prepare only the requested changes with an explicit `allowMutation: true` option.
+3. Show all before/after fields and obtain approval for that exact preview.
+4. Confirm in a **separate** call using the returned draft ID and live schema.
+5. Read the entity back. If the draft expired or the preview changed, prepare again and get approval for the new preview.
+
+Preparation example (arguments come from the live schema and the owner's request):
+
+```js
+const draft = await client.callTool(
+  'update_productized_service_prepare',
+  reviewedUpdateArguments,
+  { allowMutation: true },
+);
+console.log(draft); // Review locally; do not put account data into public logs.
+// Stop here for review. There is deliberately no automatic confirm call.
 ```
 
-### 2. Cursor IDE
-Add the remote MCP server to your Cursor workspace settings (`.cursor/mcp.json`):
-```json
-{
-  "mcpServers": {
-    "contra": {
-      "url": "https://contra.com/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_ACCESS_TOKEN"
-      }
-    }
-  }
-}
-```
+The standalone [prepare example](scripts/examples/prepare-service-update.mjs) requires `--prepare SERVICE_SLUG`, never selects the first service and never confirms. An empty update may be rejected by the current schema; it is not a health check.
 
-### 3. Claude Code / Claude Desktop
-Add to your `claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "contra": {
-      "command": "node",
-      "args": ["/path/to/contra-mcp-starter/scripts/contra-client.mjs"]
-    }
-  }
-}
-```
+Treat arrays and content blocks as full replacements unless the current schema says otherwise. Preserve omitted data and stable entity IDs. Templates contain example copy and prices, not facts or permission to publish them.
 
----
+## Current Contra capabilities and verification
 
-## The Safety Protocol: Prepare & Confirm
+The official [Contra MCP page](https://contra.com/features/mcp) describes profile/portfolio workflows, services, hiring, messaging, invoices and payment links. Do not hardcode a tool count: `tools/list` for the authenticated account is authoritative. The older README's “119 tools” was a historical observation, not a compatibility contract.
 
-Contra MCP enforces a strict two-phase commit protocol on write operations to ensure safety.
+Claims about video covers, profile tags, slug formats and editing community posts also need live-schema verification. The original toolkit observed restrictions in these areas; do not assume a missing capability forever, invent an API, or silently fall back to browser writes.
 
-### Example: Updating a Service
-```javascript
-import { callContraTool } from "./scripts/contra-client.mjs";
+See [verification notes](docs/VERIFICATION.md) for the dated evidence and limitations. `npm test` is offline; `npm run health` is a separate live read-only check and returns only counts and verification flags. `npm run projects` includes draft projects and returns at most 25 entries; health checks published projects only, up to 10. Neither claims a complete portfolio export.
 
-// Step 1: Prepare draft (no database changes)
-const draft = await callContraTool("update_productized_service_prepare", {
-  slug: "your-service-slug",
-  price: {
-    type: "RATE",
-    amount: 6000,
-    interval: "MONTH"
-  }
-});
-
-// Step 2: Human Review Phase
-console.log("Review changes:", draft.preview.changes);
-
-// Step 3: Confirm update (commits to live database)
-await callContraTool("update_productized_service_confirm", {
-  draftId: draft.draftId,
-  confirm: true
-});
-```
-
-> [!IMPORTANT]
-> **Full-Replacement Fields Warning:**
-> In Contra MCP, array fields (`deliverables`, `faqs`, `tags`, `roles`, `tools`) behave as **full replacements**. Passing a list replaces the entire existing list on Contra. To preserve existing items, omit the field entirely from your update.
-
----
-
-## Directory Structure
-
-```text
-contra-mcp-starter/
-├── AGENTS.md                  # Operational rules for AI assistants
-├── README.md                  # English documentation (this file)
-├── README.ru.md               # Russian documentation
-├── package.json               # Zero-dependency npm scripts
-├── .gitignore                 # Strict token & secret isolation
-│
-├── scripts/
-│   ├── auth.mjs               # Interactive OAuth 2.0 PKCE CLI
-│   ├── contra-client.mjs      # Auto-refreshing MCP client SDK
-│   └── examples/
-│       ├── whoami.mjs         # Profile inspector
-│       ├── inspect-services.mjs # Services listing
-│       ├── inspect-projects.mjs # Case studies & work posts listing
-│       └── prepare-service-update.mjs # Safe two-phase commit demo
-│
-└── templates/
-    ├── profile.example.md     # Bio, headline & social links template
-    ├── services.example.md    # 3 flagship services architecture
-    └── case-study.example.md  # High-impact case study structure
-```
-
----
-
-## Technical Constraints & Contra Architecture
-
-1. **Unique Slug NanoIDs**: Every project and service on Contra begins with an 8-character ID (e.g. `cO2eXAUv-...`). This prefix is Contra's database lookup key because routes are global (`contra.com/p/...`). The text after the hyphen is automatically derived from your `title`.
-2. **Cover Images vs Videos**:
-   - `coverImageUrl` in MCP accepts public image URLs (PNG, JPG, WebP) and automatically mirrors them to Cloudinary.
-   - Video covers (MP4) must be uploaded via the Contra web editor.
-   - Videos inside project bodies (`content`) are supported via standalone YouTube and Vimeo URLs.
-3. **Projects vs Work Posts**:
-   - `projects` are full portfolio case studies with complete MCP CRUD support.
-   - `workPosts` are community feed items and cannot be edited via MCP.
-
----
-
-## Contributing
-
-Contributions, feedback, and issue reports are welcome! Feel free to open an issue or submit a pull request.
-
----
+- [Agent rules](AGENTS.md)
+- [English prompts](PROMPTS.md) / [Russian prompts](PROMPTS.ru.md)
+- [Profile template](templates/profile.example.md), [services template](templates/services.example.md), [case study template](templates/case-study.example.md)
+- [Changes](CHANGELOG.md)
 
 ## License
 
-MIT License © 2026 [Alexander Nevsky](https://contra.com/alexander_nevsky). Built for the global independent builder community.
+MIT © 2026 Alexander Nevsky. Independent community toolkit; not an official Contra SDK.

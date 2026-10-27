@@ -4,12 +4,11 @@ import { whoami } from "../contra-client.mjs";
 try {
   const me = await whoami();
   const profile = me?.visitor?.userAccount?.profile;
-  const account = me?.visitor?.userAccount;
+  if (!profile?.displayUsername) throw new Error("whoami did not identify the account.");
 
   console.log("\n👤 Contra Authenticated Profile\n");
   console.log(`Username: @${profile?.displayUsername || "unknown"}`);
   console.log(`Name:     ${profile?.firstName || ""} ${profile?.lastName || ""}`);
-  console.log(`Email:    ${account?.emailAddress || "hidden"}`);
   console.log(`Type:     ${me?.visitor?.selectedUserType || "N/A"}`);
   console.log(`Profile:  https://contra.com/${profile?.displayUsername}\n`);
 } catch (err) {

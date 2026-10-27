@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "contra": {
+      "type": "http",
+      "url": "https://contra.com/mcp"
+    }
+  }
+}
